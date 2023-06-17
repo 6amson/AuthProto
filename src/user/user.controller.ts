@@ -19,4 +19,16 @@ export class UserController {
       const token = await this.userService.signin(user);
       return response.status(HttpStatus.OK).json(token)
   }
+
+  @Get('signin')
+  test(): string {
+    return this.userService.test();
+  }
 }
+
+// {
+//   "firstname": "olusinde",
+//   "lastname": "damilola",
+//   "email": "kokomaster@gmail.com",
+//   "password": "extrovert7"
+// }

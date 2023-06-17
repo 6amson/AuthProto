@@ -84,7 +84,11 @@ export class UserService {
         }
     }
 
-
+    public test(): string {
+        return (
+            'Working so far'
+        )
+    }
 
 
 }
