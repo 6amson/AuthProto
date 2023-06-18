@@ -1,10 +1,17 @@
 import { Injectable, HttpException, HttpStatus, Res } from "@nestjs/common";
+import { httpErrorException } from './user.exception';
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { User, UserDocument } from "./schema/user.schema";
+import { User } from "./schema/user.schema";
 import * as bcrypt from 'bcryptjs';
-import { JwtService } from '@nestjs/jwt';
 import * as jwt from 'jsonwebtoken';
+import { config } from 'dotenv';
+import { UserDto } from "./dto/user.dto";
+import { UnauthorizedException } from '@nestjs/common';
+// import { JwtService } from '@nestjs/jwt';
+
+
+config();
 
 const accessTokenSecret: string = process.env.ACCESS_TOKEN_SECRET;
 const refreshTokenSecret: string = process.env.REFRESH_TOKEN_SECRET;
@@ -12,8 +19,8 @@ const refreshTokenSecret: string = process.env.REFRESH_TOKEN_SECRET;
 @Injectable()
 export class UserService {
 
-    constructor(@InjectModel(User.name) private userModel: Model<User>) {}
-    
+    constructor(@InjectModel(User.name) private userModel: Model<User>) { }
+
 
     private generateAccessToken(payload: any): string {
         return jwt.sign(payload, accessTokenSecret, {
@@ -36,12 +43,20 @@ export class UserService {
         }
     }
 
+
+    async findOne(mail: string): Promise<User> {
+        return this.userModel.findOne({ email: mail }).exec();
+    }
+
+
     async signup(user: User): Promise<User> {
         const existingUser = await this.userModel.findOne({ email: user.email }).exec();
+        // console.log(existingUser);
 
-       try{
         if (existingUser) {
-            throw new HttpException('User with this email already exists', HttpStatus.CONFLICT);
+            throw new httpErrorException('User with this email already exists', HttpStatus.CONFLICT);
+            // return (existingUser);
+            // throw new HttpException('User with this email already exists', HttpStatus.CONFLICT);
         }
 
         const hashedPassword = await bcrypt.hash(user.password, 10);
@@ -53,42 +68,60 @@ export class UserService {
 
         return newUser.save();
 
-       } catch (error){
-        console.error('An error occurred:', error.message);
-       }
+
     }
 
-    async signin(user: User): Promise<{ accessToken: string, refreshToken: string }> {
+    async signin(user: UserDto): Promise<{ accessToken: string, refreshToken: string }> {
         const foundUser = await this.userModel.findOne({ email: user.email }).exec();
 
-        try{
-            if (!foundUser) {
-                throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
-            }
-    
-            const isPasswordValid = await bcrypt.compare(user.password, foundUser.password);
-    
-            if (!isPasswordValid) {
-                throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
-            }
-    
-            const accessToken = this.generateAccessToken({ sub: foundUser._id });
-            const refreshToken = this.generateRefreshToken({ sub: foundUser._id });
-    
-            return {
-                accessToken,
-                refreshToken
-            };
-        } catch (error){
-            console.error('An error occurred:', error.message);
+
+        if (!foundUser) {
+            throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
         }
+
+        const isPasswordValid = await bcrypt.compare(user.password, foundUser.password);
+
+        if (!isPasswordValid) {
+            throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
+        }
+
+        const accessToken = this.generateAccessToken({ sub: foundUser._id });
+        const refreshToken = this.generateRefreshToken({ sub: foundUser._id });
+
+
+        return {
+            accessToken,
+            refreshToken,
+        }
+
     }
 
-    public test(): string {
-        return (
-            'Working so far'
-        )
-    }
+
+    public verifyAuth(authHeader: string, request: object): string {
 
 
+        //set accessToken directly from header
+        // const token = authHeader && authHeader.split(' ')[1];
+
+        const token = authHeader;
+
+        //logic to set accesstoken from request object MAY come in here
+
+        if (token) {
+            try {
+                const decodedToken = jwt.verify(token, accessTokenSecret);
+                const userId = decodedToken.sub;
+
+                //if there is accessToken, return a refreshTtoken
+                return this.generateRefreshToken(userId);
+
+            } catch (err) {
+                throw new UnauthorizedException('Invalid token', err.message);
+            }
+        }else {
+            // throw new UnauthorizedException('No user');
+            throw new UnauthorizedException ('No user');
+        }
+    } 
 }
+
