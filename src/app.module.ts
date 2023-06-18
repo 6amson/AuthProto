@@ -3,10 +3,14 @@ import { Module } from '@nestjs/common';
 // import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
+import { config } from 'dotenv';
+
+config();
+const databaseUrl = process.env.DATABASE_URL;
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb+srv://bunmigrey:bunmiGrey@cluster1.pf8gmhg.mongodb.net/authPrototype'),
+    MongooseModule.forRoot(databaseUrl),
     UserModule,
   ],
   // controllers: [AppController],
