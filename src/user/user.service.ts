@@ -31,7 +31,7 @@ export class UserService {
 
     private generateRefreshToken(payload: any): string {
         return jwt.sign(payload, refreshTokenSecret, {
-            expiresIn: '7d',
+            expiresIn: "24h",
         });
     }
 
