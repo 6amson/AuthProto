@@ -25,11 +25,15 @@ export class UserController {
     @Post('user/signin')
     async SignIn(@Res() response, @Body() user: UserDto) {
         const token = await this.userService.signin(user);
+        console.log('auth called')
         return response.status(HttpStatus.OK).json(token)
     }
 
     @Get('user/verify')
-    async verifyAuth (@Headers('authorization') authHeader: string, @Req() request: Request){
-        return this.userService.verifyAuth(authHeader, request)
+    async verifyAuth (@Headers('authorization') authHeader: string,){
+        
+        return this.userService.verifyAuth(authHeader)
     }
 }
+
+// @Headers('authorization') authHeader: string,
