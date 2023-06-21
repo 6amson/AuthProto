@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, HttpStatus, Redirect, Param, Post, Headers, Put, Req, Res } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Redirect, Param, Post, Headers, Put,Req, Res } from "@nestjs/common";
 import { User } from "./schema/user.schema";
 import { UserService } from "./user.service";
-import { UserDto } from "./dto/user.dto"
+import { UserDto } from "./dto/user.dto";
+import { Request } from 'express';
 // import { JwtService } from '@nestjs/jwt'
 
 @Controller()
@@ -28,7 +29,7 @@ export class UserController {
     }
 
     @Get('user/verify')
-    async verifyAuth (@Headers('authorization') authHeader: string, @Req() request: object){
+    async verifyAuth (@Headers('authorization') authHeader: string, @Req() request: Request){
         return this.userService.verifyAuth(authHeader, request)
     }
 }

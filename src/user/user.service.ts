@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus, Res } from "@nestjs/common";
+import { Injectable, HttpException, HttpStatus, Req } from "@nestjs/common";
 import { httpErrorException } from './user.exception';
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
@@ -8,6 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import { config } from 'dotenv';
 import { UserDto } from "./dto/user.dto";
 import { UnauthorizedException } from '@nestjs/common';
+import { Request } from 'express';
 // import { JwtService } from '@nestjs/jwt';
 
 
@@ -97,19 +98,19 @@ export class UserService {
     }
 
 
-    public verifyAuth(authHeader: string, request: object): string {
-
+    public verifyAuth(verifyHeader: string, @Req() request: Request): string {
+        const authHeader = request.headers['authorization'];
 
         //set accessToken directly from header
-        // const token = authHeader && authHeader.split(' ')[1];
+        const token = authHeader && authHeader.split(' ')[1];
 
-        const token = authHeader;
+        // const token = authHeader;
 
         //logic to set accesstoken from request object MAY come in here
 
-        if (token) {
+        if (token || verifyHeader) {
             try {
-                const decodedToken = jwt.verify(token, accessTokenSecret);
+                const decodedToken = jwt.verify(token || verifyHeader, accessTokenSecret);
                 const userId = decodedToken.sub;
 
                 //if there is accessToken, return a refreshTtoken
