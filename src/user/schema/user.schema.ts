@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { IsEmail, IsNotEmpty } from 'class-validator';
 import { HydratedDocument } from 'mongoose';
-// export type UserDocument = User & Document;
+
 export type UserDocument = HydratedDocument<User>;
 
 @Schema()

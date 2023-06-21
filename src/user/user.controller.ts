@@ -2,8 +2,6 @@ import { Body, Controller, Delete, Get, HttpStatus, Redirect, Param, Post, Heade
 import { User } from "./schema/user.schema";
 import { UserService } from "./user.service";
 import { UserDto } from "./dto/user.dto";
-import { Request } from 'express';
-// import { JwtService } from '@nestjs/jwt'
 
 @Controller()
 export class UserController {

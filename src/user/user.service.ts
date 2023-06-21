@@ -7,11 +7,6 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { config } from 'dotenv';
 import { UserDto } from "./dto/user.dto";
-import { UnauthorizedException } from '@nestjs/common';
-import { Request } from 'express';
-import { Logger } from '@nestjs/common';
-import { decode } from "querystring";
-// import { JwtService } from '@nestjs/jwt';
 
 
 config();
@@ -27,7 +22,7 @@ export class UserService {
 
     private generateAccessToken(payload: any): string {
         return jwt.sign({payload}, accessTokenSecret, {
-            expiresIn: '10m',
+            expiresIn: '5m',
         });
     }
 
@@ -36,15 +31,6 @@ export class UserService {
             { expiresIn: "24h"},
         );
     }
-
-    // validateToken(token: string, secret: string): boolean {
-    //     try {
-    //         jwt.verify(token, secret);
-    //         return true;
-    //     } catch (error) {
-    //         return false;
-    //     }
-    // }
 
     validateToken(token: string, secret: string): string | object{
         const tokens = token.slice(7, token.length).toString();
